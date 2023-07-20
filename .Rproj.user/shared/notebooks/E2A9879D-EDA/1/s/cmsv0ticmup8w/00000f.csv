@@ -1,0 +1,6 @@
+"0","house <- house[!is.na(house$GarageCars), ]"
+"0","sum(is.na(house$GarageCars))"
+"1","[1]"
+"1"," 0"
+"1","
+"

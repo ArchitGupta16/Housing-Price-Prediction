@@ -1,0 +1,4 @@
+"0","library(ggplot2)"
+"0","ggplot(house, aes(x = Alley)) + "
+"0","  geom_bar(fill = ""blue"") +"
+"0","  labs(title = ""Distribution of Alley"", x = ""Alley"", y = ""Count"")"

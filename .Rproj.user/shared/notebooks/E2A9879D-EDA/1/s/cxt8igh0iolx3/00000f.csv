@@ -1,0 +1,4 @@
+"0","correlation <- cor(house$Exterior1st, house$Exterior2nd)"
+"0",""
+"0","plot(house$Exterior1st, house$Exterior2nd, pch = 16, col = ""blue"", xlab = ""Exterior1st"", ylab = ""Exterior2nd"","
+"0","     main = paste(""Correlation = "", round(correlation, 2)))"

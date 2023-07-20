@@ -1,0 +1,4 @@
+"0","mode_Functional <- as.character(names(sort(table(house$Functional),"
+"0","                                             decreasing = TRUE)[1]))"
+"0",""
+"0","house$Functional[is.na(house$Functional)] <- mode_Functional"

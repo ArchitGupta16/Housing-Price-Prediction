@@ -1,0 +1,7 @@
+"0","mode_value <- as.character(table(house$SaleType))[which.max(table(house$SaleType))]"
+"0","house$SaleType[is.na(house$SaleType)] <- mode_value"
+"0","sum(is.na(house$SaleType))"
+"1","[1]"
+"1"," 0"
+"1","
+"

@@ -1,0 +1,4 @@
+"0","correlation <- cor(house$BsmtFinType1, house$BsmtFinType2)"
+"0",""
+"0","plot(house$BsmtFinType1, house$BsmtFinType1, pch = 16, col = ""purple"", xlab = ""BsmtFinType1"", ylab = ""BsmtFinType2"","
+"0","     main = paste(""Correlation = "", round(correlation, 2)))"

@@ -1,0 +1,4 @@
+"0","ggplot(house, aes(x = LotArea, y = SalePrice)) +"
+"0","  geom_point(size = 3, alpha = 0.8) +"
+"0","  labs(x = ""LotArea (feet)"", y = ""SalePrice"") +"
+"0","  theme_classic()"

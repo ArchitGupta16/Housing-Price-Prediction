@@ -1,0 +1,6 @@
+"0","ggplot(house, aes(x = LotShape)) +"
+"0","  geom_bar(fill = ""blue"") +"
+"0","  scale_x_discrete(limits = c(""Reg"", ""IR1"", ""IR2"", ""IR3"")) +"
+"0","  labs(x = ""Lot Shape"", y = ""Count"", "
+"0","       title = ""Distribution of Lot Shapes"") +"
+"0","  theme_minimal()"

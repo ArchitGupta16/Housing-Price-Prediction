@@ -1,0 +1,6 @@
+"0","house <- house[!is.na(house$BsmtFinSF2), ]"
+"0",""
+"0","ggplot(house, aes(x=BsmtFinSF2)) +"
+"0","  geom_histogram(binwidth = 100) +"
+"0","  labs(x = ""BsmtFinSF2"", y = ""Frequency"") +"
+"0","  ggtitle(""Histogram of BsmtFinSF2 (after removing NA)"")"

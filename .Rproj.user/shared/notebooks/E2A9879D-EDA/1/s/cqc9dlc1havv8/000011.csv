@@ -1,0 +1,39 @@
+"0","colors <- c(rgb(0.894, 0.102, 0.110),"
+"0","            rgb(0.216, 0.494, 0.722),"
+"0","            rgb(0.302, 0.686, 0.290),"
+"0","            rgb(0.596, 0.306, 0.639),"
+"0","            rgb(1.000, 0.498, 0.000),"
+"0","            rgb(1.000, 1.000, 0.200),"
+"0","            rgb(0.651, 0.337, 0.157),"
+"0","            rgb(0.969, 0.510, 0.745),"
+"0","            rgb(0.200, 0.200, 0.200),"
+"0","            rgb(0.650, 0.700, 0.650),"
+"0","            rgb(0.800, 0.800, 0.800),"
+"0","            rgb(0.800, 0.800, 1.000),"
+"0","            rgb(0.000, 1.000, 1.000),"
+"0","            rgb(1.000, 0.800, 0.800),"
+"0","            rgb(0.000, 0.000, 0.000))"
+"0",""
+"0","# create a scatter plot with 15 different colors for MSSubClass"
+"0","ggplot(house, aes(x = factor(MSSubClass), y = SalePrice, color = factor(MSSubClass))) +"
+"0","  geom_point(size = 3, alpha = 0.8) +"
+"0","  scale_color_manual(values = colors) +"
+"0","  labs(x = ""MSSubClass"", y = ""SalePrice"") +"
+"0","  theme_classic()"
+"1","[1m[33mError[39m in `geom_point()`:[22m
+[1m[22m[33m![39m Problem while computing aesthetics.
+[36mℹ[39m Error occurred in the 1st layer.
+[1mCaused by error in `FUN()`:[22m
+[33m![39m object 'SalePrice' not found
+Backtrace:
+[90m  1. [39m[1mbase[22m (local) `<fn>`(x)
+[90m  2. [39mggplot2:::print.ggplot(x)
+[90m  4. [39mggplot2:::ggplot_build.ggplot(x)
+[90m  5. [39mggplot2:::by_layer(...)
+[90m 12. [39mggplot2 (local) f(l = layers[[i]], d = data[[i]])
+[90m 13. [39ml$compute_aesthetics(d, plot)
+[90m 14. [39mggplot2 (local) compute_aesthetics(..., self = self)
+[90m 15. [39mggplot2:::scales_add_defaults(...)
+[90m 16. [39m[1mbase[22m::lapply(aesthetics[new_aesthetics], eval_tidy, data = data)
+[90m 17. [39m[1mrlang[22m (local) FUN(X[[i]], ...)
+"

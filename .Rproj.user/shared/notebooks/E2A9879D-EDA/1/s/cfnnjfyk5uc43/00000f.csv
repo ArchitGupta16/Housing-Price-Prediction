@@ -1,0 +1,3 @@
+"0","plot(table(house$BsmtUnfSF), type = ""l"","
+"0","     xlab = ""BsmtUnfSF"", ylab = ""Frequency"","
+"0","     main = ""Frequency of BsmtUnfSF in House Dataset"")"

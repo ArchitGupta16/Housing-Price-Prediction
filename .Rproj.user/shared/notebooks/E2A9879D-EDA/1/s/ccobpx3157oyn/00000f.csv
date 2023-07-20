@@ -1,0 +1,8 @@
+"0","library(ggplot2)"
+"0","my_colors <- c(""#F8766D"", ""#7CAE00"", ""#00BFC4"",""#00FFFF"", ""#FFA07A"", ""#20B2AA"",  ""#6A5ACD"", ""#FFFF33"")"
+"0","ggplot(house, aes(x = factor(BldgType), y = SalePrice, fill = factor(BldgType))) +"
+"0","  geom_boxplot(alpha = 0.8, color = ""black"", outlier.shape = NA) +"
+"0","  scale_fill_manual(values = my_colors) +"
+"0","  labs(x = ""BldgType"", y = ""SalePrice"") +"
+"0","  theme_minimal() +"
+"0"," theme(axis.text.x = element_text(angle = 45, hjust = 1))"

@@ -1,0 +1,6 @@
+"0","ggplot(house, aes(x=BsmtFinSF2, fill=factor(BsmtQual))) +"
+"0","  geom_histogram(binwidth = 100, color=""black"") +"
+"0","  scale_fill_manual(values=c(""#FFC300"", ""#FF5733"", ""#C70039"", ""#900C3F"", ""#581845"")) +"
+"0","  labs(x = ""BsmtFinSF2"", y = ""Frequency"", fill = ""BsmtQual"") +"
+"0","  ggtitle(""Histogram of BsmtFinSF2 by BsmtQual"") +"
+"0","  theme_bw()"

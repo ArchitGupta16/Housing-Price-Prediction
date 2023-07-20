@@ -1,0 +1,4 @@
+"0","mean_BsmtUnfSF <- mean(house$BsmtUnfSF, na.rm = TRUE)"
+"0",""
+"0","# Replace NA values with mean value"
+"0","house$BsmtUnfSF[is.na(house$BsmtUnfSF)] <- mean_BsmtUnfSF"

@@ -1,0 +1,6 @@
+"0","sum(is.na(house$KitchenQual))"
+"1","[1]"
+"1"," 0"
+"1","
+"
+"0","house <- house[!is.na(house$KitchenQual), ]"

@@ -1,0 +1,8 @@
+"0","library(ggplot2)"
+"0","my_colors <- c(""#F8766D"", ""#7CAE00"", ""#00BFC4"", ""#C77CFF"", ""#619CFF"", ""#999999"", ""blue"", ""#F0E442"", ""#FF61C3"", ""#00FFFF"", ""#FFA07A"", ""#20B2AA"", ""#FF7F50"", ""#6A5ACD"", ""#00FF7F"", ""#FFD700"", ""#B22222"", ""#FFC0CB"", ""#483D8B"", ""#32CD32"", ""#FF1493"", ""#DAA520"", ""#800000"", ""#7B68EE"",""black"", ""#4DAF4A"", ""#984EA3"", ""#FF7F00"", ""#FFFF33"")"
+"0","ggplot(house, aes(x = factor(Neighborhood), y = SalePrice, fill = factor(Neighborhood))) +"
+"0","  geom_boxplot(alpha = 0.8, color = ""black"", outlier.shape = NA) +"
+"0","  scale_fill_manual(values = my_colors) +"
+"0","  labs(x = ""Neighborhood"", y = ""SalePrice"") +"
+"0","  theme_minimal() +"
+"0","  theme(axis.text.x = element_text(angle = 45, hjust = 1))"

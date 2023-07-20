@@ -1,0 +1,2 @@
+"0","boxplot(house$LotFrontage, main = ""Distribution of LotFrontage after Imputing Missing Values with Mean"","
+"0","        xlab = ""LotFrontage"", col = ""lightblue"", border = ""black"", horizontal = TRUE)"

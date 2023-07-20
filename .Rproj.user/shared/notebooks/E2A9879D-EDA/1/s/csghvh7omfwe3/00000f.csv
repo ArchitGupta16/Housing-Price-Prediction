@@ -1,0 +1,7 @@
+"0","sum(is.na(house$BsmtFullBath))"
+"1","[1]"
+"1"," 2"
+"1","
+"
+"0","median_value <- median(house$BsmtFullBath, na.rm = TRUE)"
+"0","house$BsmtFullBath[is.na(house$BsmtFullBath)] <- median_value"

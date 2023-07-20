@@ -1,0 +1,2 @@
+"0","house <- read.csv(""D:/SEM-6/Statistics/Project/Housing Prices/train.csv"", header = TRUE)"
+"0","head(house, n=3)"

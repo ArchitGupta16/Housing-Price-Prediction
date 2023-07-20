@@ -1,0 +1,6 @@
+"0","house$MSZoning[is.na(house$MSZoning)] <- names(sort(table(house$MSZoning), decreasing = TRUE))[1]"
+"0","sum(is.na(house$MSZoning))"
+"1","[1]"
+"1"," 0"
+"1","
+"

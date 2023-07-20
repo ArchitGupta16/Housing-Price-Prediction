@@ -1,0 +1,1 @@
+"0","house$MasVnrArea <- ifelse(is.na(house$MasVnrArea), 0, house$MasVnrArea)"

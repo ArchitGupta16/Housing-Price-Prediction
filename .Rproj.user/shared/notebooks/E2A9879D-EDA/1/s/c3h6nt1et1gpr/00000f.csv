@@ -1,0 +1,6 @@
+"0","house <- house[!is.na(house$Utilities), ]"
+"0","sum(is.na(house$Utilities))"
+"1","[1]"
+"1"," 0"
+"1","
+"

@@ -1,0 +1,5 @@
+"0","house$MasVnrType <- ifelse(is.na(house$MasVnrType), ""None"", house$MasVnrType)"
+"0","mvt_counts <- table(house$MasVnrType)"
+"0",""
+"0","barplot(mvt_counts, col = ""blue"", main = ""Counts of MasVnrType"","
+"0","        xlab = ""MasVnrType"", ylab = ""Count"")"

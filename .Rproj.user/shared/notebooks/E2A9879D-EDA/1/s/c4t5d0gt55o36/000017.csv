@@ -1,0 +1,8 @@
+"0","ggplot(house, aes(x = OverallQual, fill = factor(OverallQual))) +"
+"0","  geom_histogram(color = ""white"", binwidth = 1) +"
+"0","  scale_fill_viridis_d() +"
+"0","  labs(title = ""Distribution of OverallQual"","
+"0","       x = ""Overall Quality Rating"","
+"0","       y = ""Frequency"","
+"0","       fill = ""Overall Quality Rating"") +"
+"0","  theme_minimal()"

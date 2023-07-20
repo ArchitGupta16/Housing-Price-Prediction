@@ -1,0 +1,3003 @@
+---
+title: "EDA"
+author: "Archit"
+output: pdf_document
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Data loading
+
+```{r housing}
+house <- read.csv("D:/SEM-6/Statistics/Project/Housing Prices/train.csv", header = TRUE)
+head(house, n=3)
+```
+
+## Missing values
+
+```{r NA}
+missing_counts <- colSums(is.na(house))
+missing_cols <- names(which(missing_counts > 1))
+print("Missing Values:")
+missing_counts
+sort(missing_cols)
+
+```
+
+## Filling missing values and encoding categorical variables
+
+Analyzing the values of the variable PoolQC first as it had highest
+number of NA values 
+
+**1. PoolQC**
+
+```{r mv}
+
+library(ggplot2)
+summary(house$PoolQC)
+head(house$PoolQC)
+ggplot(data = house, aes(x = PoolQC)) +  geom_bar()
+#
+
+```
+
+Clearly the variable has no values at all in any field so a good option
+would be to just drop it and not analyze the target variable on the
+basis of it
+
+```{r PoolQC}
+house$PoolQC <- NULL
+```
+
+**2. Fence** 
+GdPrv Good Privacy 
+MnPrv Minimum Privacy 
+GdWo Good Wood
+MnWw Minimum Wood/Wire 
+NA No Fence
+
+```{r Fence}
+
+summary(house$Fence)
+ggplot(data = house, aes(x = Fence, fill = Fence)) +
+  geom_bar() +
+  scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#999999", "#000000"))
+
+
+```
+
+This NA is indicative of the number of houses which have no fence and
+these need not be filled with values as they would then lead to wrong
+impression of the houses while predicting the data so these will get
+converted into a category while encoding
+
+```{r 2}
+factor_var <- factor(house$Fence, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$Fence = numeric_labels
+print(house$Fence[1:10])
+categories <- levels(factor_var)
+categories
+```
+
+**3. Alley**
+
+```{r Alley}
+library(ggplot2)
+ggplot(house, aes(x = Alley)) + 
+  geom_bar(fill = "blue") +
+  labs(title = "Distribution of Alley", x = "Alley", y = "Count")
+```
+
+In this case also the NA indicates absence of any pavement for the
+houses which would mean that the houses dont have an access to alley and
+the NA values are important
+
+```{r 3}
+factor_var <- factor(house$Alley, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$Alley = numeric_labels
+print(house$Alley[1:10])
+categories <- levels(factor_var)
+categories
+```
+
+**4. BsmtCond** Evaluates the general condition of the basement
+
+```{r Bsmt1}
+library(ggplot2)
+
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999")
+
+ggplot(house, aes(x = BsmtCond, fill = BsmtCond)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the BsmtCond Variable",
+       x = "BsmtCond",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+```{r 4}
+factor_var <- factor(house$BsmtCond, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$BsmtCond = numeric_labels
+print(house$BsmtCond[1:10])
+categories <- levels(factor_var)
+categories
+```
+
+**5. BsmtExposure** Refers to walkout or garden level walls
+
+```{r Bsmt}
+library(ggplot2)
+
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999")
+
+ggplot(house, aes(x = BsmtExposure, fill = BsmtExposure)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the BsmtExposure Variable",
+       x = "BsmtExposure",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+```{r 5}
+factor_var <- factor(house$BsmtExposure, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$BsmtExposure = numeric_labels
+print(house$BsmtExposure[1:10])
+categories <- levels(factor_var)
+categories
+```
+
+**6. MSZoning**
+
+Identifies the general zoning classification of the sale
+
+```{r MSzoning}
+library(ggplot2)
+
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999","blue")
+
+ggplot(house, aes(x = MSZoning, fill = MSZoning)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the MSZoning Variable",
+       x = "MSZoning",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+```{r analysis}
+print("Number of NA's:")
+sum(is.na(house$MSZoning))
+```
+
+```{r 6}
+house$MSZoning[is.na(house$MSZoning)] <- names(sort(table(house$MSZoning), decreasing = TRUE))[1]
+sum(is.na(house$MSZoning))
+```
+
+Filling the NA values with mode of the variable i.e. RL category and
+then encoding it
+
+```{r 6_1}
+factor_var <- factor(house$MSZoning, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$MSZoning = numeric_labels
+print(house$MSZoning[1:10])
+categories <- levels(factor_var)
+categories
+
+library(ggplot2)
+
+# bar plot after encoding
+ggplot(house, aes(x = MSZoning)) +
+  geom_bar() +
+  labs(x = "MSZoning", y = "Count", title = "Distribution of MSZoning Categories")
+```
+
+**7. LotFrontage** Linear feet of street connected to property
+
+```{r LotFrontage}
+ggplot(house, aes(x = seq_along(LotFrontage), y = LotFrontage)) +
+  geom_line(color = "black", size = 1) +
+  geom_hline(yintercept = mean(house$LotFrontage, na.rm = TRUE), 
+             color = "red", linetype = "dashed", size = 1) +
+  geom_text(aes(x = max(seq_along(house$LotFrontage)), 
+                y = mean(house$LotFrontage, na.rm = TRUE), 
+                label = paste("Mean:", round(mean(house$LotFrontage, na.rm = TRUE), 2))), 
+            color = "black", size = 4, hjust = -0.2, vjust = -0.5) +
+  labs(x = "Feet", y = "LotFrontage", title = "Trend of LotFrontage") +
+  theme_classic()
+```
+
+```{r 7}
+mean_LotFrontage <- mean(house$LotFrontage, na.rm = TRUE)
+house$LotFrontage[is.na(house$LotFrontage)] <- mean_LotFrontage
+sum(is.na(house$MSZoning))
+
+```
+
+```{r plot}
+boxplot(house$LotFrontage, main = "Distribution of LotFrontage after Imputing Missing Values with Mean",
+        xlab = "LotFrontage", col = "lightblue", border = "black", horizontal = TRUE)
+```
+
+Imputing Values with the mean of the variable
+
+**8. Street** Type of road access to property
+
+```{r street}
+ggplot(house, aes(x = Street)) +
+  geom_bar(fill = "lightblue") +
+  labs(x = "Type of Road Access", y = "Count", 
+       title = "Distribution of Road Access Types") +
+  theme_minimal()
+```
+
+Encoding categories:
+
+```{r 8}
+factor_var <- factor(house$Street, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$Street = numeric_labels
+print(house$Street[1:10])
+categories <- levels(factor_var)
+categories
+```
+
+**9. LotShape** General shape of property
+
+```{r Lotshape}
+ggplot(house, aes(x = LotShape)) +
+  geom_bar(fill = "blue") +
+  scale_x_discrete(limits = c("Reg", "IR1", "IR2", "IR3")) +
+  labs(x = "Lot Shape", y = "Count", 
+       title = "Distribution of Lot Shapes") +
+  theme_minimal()
+```
+
+Encoding categories:
+
+```{r 9}
+factor_var <- factor(house$LotShape, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$LotShape = numeric_labels
+print(house$LotShape[1:10])
+categories <- levels(factor_var)
+categories
+```
+
+**10. LandContour** Flatness of the property Lvl Near Flat/Level Bnk
+Banked - Quick and significant rise from street grade to building HLS
+Hillside - Significant slope from side to side Low Depression
+
+```{r LandContour}
+
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999","blue")
+
+ggplot(house, aes(x = LandContour, fill = LandContour)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the LandContour Variable",
+       x = "LandContour",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+Encoding categories:
+
+```{r 10}
+factor_var <- factor(house$LandContour, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$LandContour = numeric_labels
+print(house$LandContour[1:10])
+categories <- levels(factor_var)
+categories
+```
+
+**11. Utilities** 
+Type of utilities available
+
+```{r utilities}
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999","blue")
+
+ggplot(house, aes(x = Utilities, fill = Utilities)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the Utilities Variable",
+       x = "Utilities",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+```{r further}
+table(house$Utilities)
+```
+
+Encoding categories:
+
+```{r 11}
+factor_var <- factor(house$Utilities, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$Utilities = numeric_labels
+print(house$Utilities[1:10])
+categories <- levels(factor_var)
+categories
+```
+
+```{r removing NA values}
+mode_value <- as.character(table(house$Utilities))[which.max(table(house$Utilities))]
+house$Utilities[is.na(house$Utilities)] <- mode_value
+
+sum(is.na(house$Utilities))
+```
+
+Removed 2 rows which had NA values for this variable
+
+**12.LotConfig: Lot configuration**
+
+```{r lotconfig}
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999","blue")
+
+ggplot(house, aes(x = LotConfig, fill = LotConfig)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the LotConfig Variable",
+       x = "LotConfig",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+Encoding categories:
+
+```{r 12}
+factor_var <- factor(house$LotConfig, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$LotConfig = numeric_labels
+print(house$LotConfig[1:20])
+categories <- levels(factor_var)
+categories
+```
+
+**13.LandSlope** 
+Slope of property 
+Gtl Gentle slope 
+Mod Moderate Slope
+Sev Severe Slope
+
+```{r LandSlope}
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue")
+
+ggplot(house, aes(x = LandSlope, fill = LandSlope)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the LandSlope Variable",
+       x = "LandSlope",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+```{r 13}
+factor_var <- factor(house$LandSlope, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$LandSlope = numeric_labels
+print(house$LandSlope[1:20])
+categories <- levels(factor_var)
+categories
+```
+
+**14. Neighborhood**
+
+```{r neigborhood}
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue", "#F0E442", "#FF61C3", "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#00FF7F", "#FFD700", "#B22222", "#FFC0CB", "#483D8B", "#32CD32", "#FF1493", "#DAA520", "#800000", "#7B68EE","black")
+
+ggplot(house, aes(x = "", fill = Neighborhood)) +
+  geom_bar(width = 1, color = "white") +
+  coord_polar(theta = "y") +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of Neighborhood",
+       fill = "Neighborhood") +
+  theme_void()
+```
+
+Encoding labels
+
+```{r 14}
+factor_var <- factor(house$Neighborhood, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$Neighborhood = numeric_labels
+print(house$Neighborhood[1:10])
+categories <- levels(factor_var)
+categories
+```
+
+**15. Condition1** 
+Proximity to various conditions
+
+```{r condition1}
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue", "#F0E442", "#FF61C3", "#00FFFF")
+
+ggplot(house, aes(x = Condition1, fill = Condition1)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the Condition Variable",
+       x = "Condition1",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+Encoding labels
+
+```{r 15}
+factor_var <- factor(house$Condition1, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$Condition1 = numeric_labels
+print(house$Condition1[1:10])
+categories <- levels(factor_var)
+categories
+```
+
+**16. Condition2** 
+Proximity to various conditions (if more than one is present)
+
+```{r condition2}
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue", "#F0E442", "#FF61C3", "#00FFFF")
+
+ggplot(house, aes(x = Condition2, fill = Condition2)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the Condition2 Variable",
+       x = "Condition2",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+```{r 16}
+factor_var <- factor(house$Condition2, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$Condition2 = numeric_labels
+print(house$Condition2[1:10])
+categories <- levels(factor_var)
+categories
+```
+
+**17. BldgType** 
+Type of dwelling
+
+```{r bldgType}
+library(ggplot2)
+
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999")
+
+ggplot(house, aes(x = BldgType, fill = BldgType)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the BldgType Variable",
+       x = "BldgType",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+```{r 17}
+factor_var <- factor(house$BldgType, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$BldgType = numeric_labels
+print(house$BldgType[1:10])
+categories <- levels(factor_var)
+categories
+```
+
+**18 HouseStyle** 
+Style of dwelling
+
+```{r style}
+library(ggplot2)
+
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999","pink","blue")
+
+ggplot(house, aes(x = HouseStyle, fill = HouseStyle)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the HouseStyle Variable",
+       x = "HouseStyle",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+```{r 18}
+factor_var <- factor(house$HouseStyle, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$HouseStyle = numeric_labels
+print(house$HouseStyle[1:10])
+categories <- levels(factor_var)
+categories
+```
+
+**19. OverallQual** 
+Rates the overall material and finish of the house
+
+```{r quality of house}
+ggplot(house, aes(x = OverallQual, fill = factor(OverallQual))) +
+  geom_histogram(color = "white", binwidth = 1) +
+  scale_fill_viridis_d() +
+  labs(title = "Distribution of OverallQual",
+       x = "Overall Quality Rating",
+       y = "Frequency",
+       fill = "Overall Quality Rating") +
+  theme_minimal()
+```
+
+**20. RoofStyle** 
+Type of roof
+
+```{r roofstyle}
+ggplot(house, aes(x = "", fill = RoofStyle)) +
+  geom_bar(width = 1, color = "black") +
+  coord_polar(theta = "y") +
+  scale_fill_brewer(palette = "Set3") +
+  labs(title = "Distribution of Roof Styles",
+       fill = "Roof Style") +
+  theme_void() +
+  theme(plot.title = element_text(hjust = 0.5),
+        legend.position = "bottom") +
+  annotate("text", x = 0, y = 0, label = "Roof Styles", size = 6, fontface = "bold")
+```
+
+```{r 20}
+factor_var <- factor(house$RoofStyle, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$RoofStyle = numeric_labels
+print(house$RoofStyle[1:10])
+categories <- levels(factor_var)
+categories
+```
+
+**21. RoofMatl**
+
+```{r roof material}
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999","pink","blue")
+
+ggplot(house, aes(x = RoofMatl, fill = RoofMatl)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the RoofMatl Variable",
+       x = "RoofMatl",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+```{r 21}
+factor_var <- factor(house$RoofMatl, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$RoofMatl = numeric_labels
+print(house$RoofMatl[1:10])
+categories <- levels(factor_var)
+categories
+```
+
+**22. Exterior1st** 
+Exterior covering on house
+
+```{r exterior 1}
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue", "#F0E442", "#FF61C3", "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#00FF7F", "#FFD700", "#B22222", "#FFC0CB", "#483D8B", "#32CD32", "#FF1493", "#DAA520", "#800000", "#7B68EE","black")
+ggplot(house, aes(x = "", fill = Exterior1st)) +
+  geom_bar(width = 1, color = "black") +
+  coord_polar(theta = "y") +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of Exterior1st",
+       fill = "Exterior1st") +
+  theme_void()
+```
+
+```{r 22}
+factor_var <- factor(house$Exterior1st, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$Exterior1st = numeric_labels
+print(house$Exterior1st[1:10])
+categories <- levels(factor_var)
+categories
+```
+
+**23. Exterior2nd** 
+Exterior covering on house (if more than one material)
+
+```{r exterior 2nd}
+ext_counts <- table(house$Exterior2nd)
+ext_props <- prop.table(ext_counts)
+ext_names <- names(ext_counts)
+ext_colors <- c("#FFB7D5", "#FF7F50", "#FFD700", "#00CED1", "#6A5ACD", "#FF69B4",
+                "#32CD32", "#1E90FF", "#8B008B", "#FF4500", "#008080", "#FFC0CB",
+                "#00FF7F", "#9400D3", "#FFDAB9", "#FFFFE0", "#F0E68C")
+
+barplot(ext_props, horiz = TRUE, col = ext_colors, border = "white",
+        main = "Distribution of Exterior Coverings", xlab = "Proportion",
+        xlim = c(0, 1), las = 1, cex.main = 1.5, cex.lab = 1.2,
+        legend.text = ext_names, args.legend = list(x = "topright", bty = "n"))
+```
+
+```{r 23}
+factor_var <- factor(house$Exterior2nd, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$Exterior2nd = numeric_labels
+print(house$Exterior2nd[1:10])
+categories <- levels(factor_var)
+categories
+```
+
+**24. MasVnrType** 
+Masonry veneer type
+
+```{r masonry}
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999","pink")
+
+ggplot(house, aes(x = MasVnrType, fill = MasVnrType)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the MasVnrType Variable",
+       x = "MasVnrType",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+```{r imputing}
+house$MasVnrType <- ifelse(is.na(house$MasVnrType), "None", house$MasVnrType)
+mvt_counts <- table(house$MasVnrType)
+
+barplot(mvt_counts, col = "blue", main = "Counts of MasVnrType",
+        xlab = "MasVnrType", ylab = "Count")
+```
+
+Changed the NA to already existing None category in the variable
+
+```{r 24}
+factor_var <- factor(house$MasVnrType, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$MasVnrType = numeric_labels
+print(house$MasVnrType[1:10])
+categories <- levels(factor_var)
+categories
+```
+
+**25. MasVnrArea** 
+Masonry veneer area in square feet
+
+```{r masonry area}
+ggplot(house, aes(x = MasVnrArea)) +
+  geom_histogram(binwidth = 10, fill = "red", color = "white") +
+  labs(title = "Distribution of Masonry Veneer Area",
+       x = "Masonry Veneer Area (sqft)", y = "Count") +
+  theme_bw()
+```
+
+```{r 25}
+house$MasVnrArea <- ifelse(is.na(house$MasVnrArea), 0, house$MasVnrArea)
+```
+
+Imputed the mode that is 0 for NA values
+
+**26. ExterQual**
+Evaluates the quality of the material on the exterior 
+   Ex	Excellent
+   Gd	Good
+   TA	Average/Typical
+   Fa	Fair
+   Po	Poor
+       
+```{r exterior quality}
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999","pink")
+
+ggplot(house, aes(x = ExterQual, fill = ExterQual)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the ExterQual Variable",
+       x = "ExterQual",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+```{r 26}
+factor_var <- factor(house$ExterQual, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$ExterQual = numeric_labels
+print(house$ExterQual[1:10])
+categories <- levels(factor_var)
+categories
+```
+**27. ExterCond **
+Evaluates the present condition of the material on the exterior
+```{r ExterCond}
+my_colors <- c("#00BFC4","#F8766D", "#7CAE00",  "#C77CFF", "#619CFF")
+
+ggplot(house, aes(x = ExterCond, fill = ExterCond)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the ExterCond Variable",
+       x = "ExterCond",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+
+```{r 27}
+factor_var <- factor(house$ExterCond, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$ExterCond = numeric_labels
+print(house$ExterCond[1:10])
+categories <- levels(factor_var)
+categories
+```
+**28. Foundation**
+Type of foundation
+
+```{r foundation}
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999","pink")
+
+ggplot(house, aes(x = Foundation, fill = Foundation)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the Foundation Variable",
+       x = "Foundation",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+```{r 28}
+factor_var <- factor(house$Foundation, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$Foundation = numeric_labels
+print(house$Foundation[1:10])
+categories <- levels(factor_var)
+categories
+```
+**29. BsmtQual**
+ Evaluates the height of the basement
+ 
+```{r Bstm3}
+my_colors <- c( "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF","pink")
+
+ggplot(house, aes(x = BsmtQual, fill = BsmtQual)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the BsmtQual Variable",
+       x = "BsmtQual",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+Should not convert the NA values as they represent no basement
+```{r 29}
+factor_var <- factor(house$BsmtQual, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$BsmtQual = numeric_labels
+print(house$BsmtQual[1:10])
+categories <- levels(factor_var)
+categories
+```
+
+**30. BsmtFinType1**
+Rating of basement finished area
+
+```{r BsmtFintype1}
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999","pink")
+ggplot(house, aes(x = BsmtFinType1, fill = BsmtFinType1)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the BsmtFinType1 Variable",
+       x = "BsmtFinType1",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+Should not convert the NA values as they represent no basement
+```{r 30}
+factor_var <- factor(house$BsmtFinType1, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$BsmtFinType1 = numeric_labels
+print(house$BsmtFinType1[1:10])
+categories <- levels(factor_var)
+categories
+```
+
+**31. BsmtFinSF1**
+Type 1 finished square feet
+
+```{r BsmtFinSF1}
+ggplot(house, aes(x=BsmtFinSF1)) +
+  geom_histogram(binwidth = 100) +
+  labs(x = "BsmtFinSF1", y = "Frequency") +
+  ggtitle("Histogram of BsmtFinSF1")
+```
+Removed the only row with single NA value
+```{r 31}
+house$BsmtFinSF1[is.na(house$BsmtFinSF1)] <- mean(house$BsmtFinSF1, na.rm = TRUE)
+ggplot(house, aes(x=BsmtFinSF1)) +
+  geom_histogram(binwidth = 100) +
+  labs(x = "BsmtFinSF1", y = "Frequency") +
+  ggtitle("Histogram of BsmtFinSF1 (after removing NA)")
+```
+
+**32. BsmtFinSF2**
+Type 2 finished square feet
+```{r fintype2}
+ggplot(house, aes(x=BsmtFinSF2, fill=factor(BsmtQual))) +
+  geom_histogram(binwidth = 100, color="black") +
+  scale_fill_manual(values=c("#FFC300", "#FF5733", "#C70039", "#900C3F", "#581845")) +
+  labs(x = "BsmtFinSF2", y = "Frequency", fill = "BsmtQual") +
+  ggtitle("Histogram of BsmtFinSF2 by BsmtQual") +
+  theme_bw()
+```
+Removed the only row with single NA value
+
+```{r 32}
+house$BsmtFinSF2[is.na(house$BsmtFinSF2)] <- mean(house$BsmtFinSF2, na.rm = TRUE)
+
+ggplot(house, aes(x=BsmtFinSF2)) +
+  geom_histogram(binwidth = 100) +
+  labs(x = "BsmtFinSF2", y = "Frequency") +
+  ggtitle("Histogram of BsmtFinSF2 (after removing NA)")
+```
+
+
+**33. BsmtFinType2**
+
+Rating of basement finished area (if multiple types)
+
+```{r fintype21}
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999","pink")
+ggplot(house, aes(x = BsmtFinType2, fill = BsmtFinType2)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the BsmtFinType2 Variable",
+       x = "BsmtFinType2",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+NA represent the no basement categories and need not be removed
+```{r 33}
+factor_var <- factor(house$BsmtFinType2, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$BsmtFinType2 = numeric_labels
+print(house$BsmtFinType2[1:10])
+categories <- levels(factor_var)
+categories
+```
+
+**34. BsmtUnfSF**
+Unfinished square feet of basement area
+
+```{r bBsmtUnfSF}
+plot(table(house$BsmtUnfSF), type = "l",
+     xlab = "BsmtUnfSF", ylab = "Frequency",
+     main = "Frequency of BsmtUnfSF in House Dataset")
+```
+
+```{r 34}
+mean_BsmtUnfSF <- mean(house$BsmtUnfSF, na.rm = TRUE)
+
+# Replace NA values with mean value
+house$BsmtUnfSF[is.na(house$BsmtUnfSF)] <- mean_BsmtUnfSF
+```
+
+**35. TotalBsmtSF**
+Total square feet of basement area
+
+```{r TotalBsmtSF na}
+sum(is.na(house$TotalBsmtSF))
+```
+
+**36. Heating **
+Type of heating
+
+   Floor	Floor Furnace
+   GasA	Gas forced warm air furnace
+   GasW	Gas hot water or steam heat
+   Grav	Gravity furnace	
+   OthW	Hot water or steam heat other than gas
+   Wall	Wall furnace
+   
+```{r heating}
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "pink")
+ggplot(house, aes(x = Heating, fill = Heating)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the Heating Variable",
+       x = "Heating",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+```{r 36}
+factor_var <- factor(house$Heating, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$Heating = numeric_labels
+print(house$Heating[1:10])
+categories <- levels(factor_var)
+categories
+```
+**37. HeatingQC**
+Heating quality and condition
+
+```{r heatingQ}
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "pink")
+ggplot(house, aes(x = HeatingQC, fill = HeatingQC)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the HeatingQC Variable",
+       x = "HeatingQC",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+```{r 37}
+factor_var <- factor(house$HeatingQC, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$HeatingQC = numeric_labels
+print(house$HeatingQC[1:10])
+categories <- levels(factor_var)
+categories
+```
+
+**38. CentralAir and Central**
+Central air conditioning
+
+```{r AC}
+my_colors <- c("red", "blue", "#00BFC4", "#C77CFF", "#619CFF", "pink")
+ggplot(house, aes(x = CentralAir, fill = CentralAir)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the CentralAir Variable",
+       x = "CentralAir",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+```{r 38}
+factor_var <- factor(house$CentralAir, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$CentralAir = numeric_labels
+print(house$CentralAir[1:10])
+categories <- levels(factor_var)
+categories
+
+factor_var <- factor(house$Central, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$Central = numeric_labels
+print(house$Central[1:10])
+categories <- levels(factor_var)
+categories
+```
+**39. Electrical**
+Electrical system
+
+```{r electrics}
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999","pink")
+ggplot(house, aes(x = Electrical, fill = Electrical)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the Electrical Variable",
+       x = "Electrical",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+```{r 39}
+factor_var <- factor(house$Electrical, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$Electrical = numeric_labels
+print(house$Electrical[1:10])
+categories <- levels(factor_var)
+categories
+```
+
+**40. BsmtFullBath**
+Basement full bathrooms
+
+```{r fullbathroom}
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999","pink")
+ggplot(house, aes(x = BsmtFullBath, fill = BsmtFullBath)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the BsmtFullBath Variable",
+       x = "BsmtFullBath",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+Removes the only row with NA
+```{r 40}
+sum(is.na(house$BsmtFullBath))
+median_value <- median(house$BsmtFullBath, na.rm = TRUE)
+house$BsmtFullBath[is.na(house$BsmtFullBath)] <- median_value
+```
+
+**41. KitchenQual**
+Kitchen quality
+   Ex	Excellent
+   Gd	Good
+   TA	Typical/Average
+   Fa	Fair
+   Po	Poor
+```{r kitchenQuality}
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999","pink")
+ggplot(house, aes(x = KitchenQual, fill = KitchenQual)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the KitchenQual Variable",
+       x = "KitchenQual",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+removed single row with mode value
+```{r valueRm}
+sum(is.na(house$KitchenQual))
+mode_value <- as.character(table(house$KitchenQual))[which.max(table(house$KitchenQual))]
+house$KitchenQual[is.na(house$KitchenQual)] <- mode_value
+
+```
+```{r 41}
+factor_var <- factor(house$KitchenQual, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$KitchenQual = numeric_labels
+print(house$KitchenQual[1:10])
+categories <- levels(factor_var)
+categories
+```
+
+**42. Functional**
+Home functionality (Assume typical unless deductions are warranted)
+
+```{r functional}
+my_colors <- c("#FFC300", "#FF5733", "#C70039", "#900C3F", "#581845", "#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999","pink")
+ggplot(house, aes(x = Functional, fill = Functional)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the Functional Variable",
+       x = "Functional",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+```{r imputingNA}
+mode_Functional <- as.character(names(sort(table(house$Functional),
+                                             decreasing = TRUE)[1]))
+
+house$Functional[is.na(house$Functional)] <- mode_Functional
+```
+
+```{r 42}
+sum(is.na(house$Functional))
+factor_var <- factor(house$Functional, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$Functional = numeric_labels
+print(house$Functional[1:10])
+categories <- levels(factor_var)
+categories
+```
+
+**43. FireplaceQu**
+Fireplace quality
+
+```{r fireplaceQu}
+library(ggplot2)
+my_colors <- c("#FFC300", "#FF5733", "#C70039", "#900C3F", "#581845", "#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999","pink")
+ggplot(house, aes(x = FireplaceQu, fill = FireplaceQu)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the FireplaceQu Variable",
+       x = "FireplaceQu",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+Again the NA is a no fireplace category which cannot be removed or imputed
+```{r 43}
+factor_var <- factor(house$FireplaceQu, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$FireplaceQu = numeric_labels
+print(house$FireplaceQu[1:10])
+categories <- levels(factor_var)
+categories
+```
+*44. Fireplaces**
+Number of fireplaces
+
+```{r numberFireplace}
+ggplot(house, aes(x = seq_along(Fireplaces), y = Fireplaces)) +
+  geom_line(color = "black", size = 1) +
+  geom_hline(yintercept = mean(house$Fireplaces, na.rm = TRUE), 
+             color = "red", linetype = "dashed", size = 1) +
+  geom_text(aes(x = max(seq_along(house$Fireplaces)), 
+                y = mean(house$Fireplaces, na.rm = TRUE), 
+                label = paste("Mean:", round(mean(house$Fireplaces, na.rm = TRUE), 2))), 
+            color = "black", size = 4, hjust = -0.2, vjust = -0.5) +
+  labs(x = "Feet", y = "Fireplaces", title = "Trend of Fireplaces") +
+  theme_classic()
+```
+**45. GarageType**
+Garage location
+```{r grgType}
+library(ggplot2)
+my_colors <- c("#FFC300", "#FF5733", "#C70039", "#900C3F", "#581845", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999","pink")
+ggplot(house, aes(x = GarageType, fill = GarageType)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the GarageType Variable",
+       x = "GarageType",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+```{r 45}
+factor_var <- factor(house$GarageType, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$GarageType = numeric_labels
+print(house$GarageType[1:10])
+categories <- levels(factor_var)
+categories
+```
+**46. GarageYrBlt**
+Year garage was built
+
+```{r year}
+ggplot(house, aes(x = seq_along(GarageYrBlt), y = GarageYrBlt)) +
+  geom_line(color = "black", size = 1) +
+  geom_hline(yintercept = mean(house$GarageYrBlt, na.rm = TRUE), 
+             color = "red", linetype = "dashed", size = 1) +
+  geom_text(aes(x = max(seq_along(house$GarageYrBlt)), 
+                y = mean(house$GarageYrBlt, na.rm = TRUE), 
+                label = paste("Mean:", round(mean(house$GarageYrBlt, na.rm = TRUE), 2))), 
+            color = "black", size = 4, hjust = -0.2, vjust = -0.5) +
+  labs(x = "Feet", y = "GarageYrBlt", title = "Trend of GarageYrBlt") +
+  theme_classic()
+
+```
+```{r impute46}
+sum(is.na(house$GarageYrBlt))
+mode_GarageYrBlt <- as.numeric(names(sort(table(house$GarageYrBlt), decreasing = TRUE)[1]))
+mode_GarageYrBlt
+house$GarageYrBlt[is.na(house$GarageYrBlt)] <- mode_GarageYrBlt
+
+```
+Filled NA values with the mode of the values
+
+**47. GarageFinish**
+Interior finish of the garage
+
+```{r GarageFin}
+library(ggplot2)
+my_colors <- c("#FFC300", "#FF5733", "#C70039", "#900C3F", "#581845", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999","pink")
+ggplot(house, aes(x = GarageFinish, fill = GarageFinish)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the GarageFinish Variable",
+       x = "GarageFinish",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+NA is No garage here
+```{r 47}
+factor_var <- factor(house$GarageFinish, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$GarageFinish = numeric_labels
+print(house$GarageFinish[1:10])
+categories <- levels(factor_var)
+categories
+```
+
+**48. GarageQual**
+Garage quality
+
+```{r qualityGarage}
+library(ggplot2)
+my_colors <- c("#FFC300", "#FF5733", "#C70039", "#900C3F", "#581845", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999","pink")
+ggplot(house, aes(x = GarageQual, fill = GarageQual)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the GarageQual Variable",
+       x = "GarageQual",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+NA is no garage
+```{r 48}
+factor_var <- factor(house$GarageQual, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$GarageQual = numeric_labels
+print(house$GarageQual[1:10])
+categories <- levels(factor_var)
+categories
+```
+
+**49. GarageCars**
+Drop the only row with NA
+```{r cars}
+sum(is.na(house$GarageCars))
+house$GarageCars[is.na(house$GarageCars)] <- mean(house$GarageCars, na.rm = TRUE)
+sum(is.na(house$GarageCars))
+```
+**50. GarageArea**
+```{r areaGarage}
+sum(is.na(house$GarageArea))
+```
+
+**51. GarageCond**
+Garage condition
+
+```{r COnditionGarage}
+library(ggplot2)
+my_colors <- c("#FFC300", "#FF5733", "#C70039", "#900C3F", "#581845", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999","pink")
+ggplot(house, aes(x = GarageCond, fill = GarageCond)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the GarageCond Variable",
+       x = "GarageCond",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+Na means no garage
+```{r 51}
+factor_var <- factor(house$GarageCond, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$GarageCond = numeric_labels
+print(house$GarageCond[1:10])
+categories <- levels(factor_var)
+categories
+```
+
+
+**52. PavedDrive**
+Paved driveway
+
+   Y	Paved 
+   P	Partial Pavement
+   N	Dirt/Gravel
+       
+```{r Pavd}
+library(ggplot2)
+my_colors <- c("#FFC300", "#FF5733", "#C70039", "#900C3F", "#581845", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999","pink")
+ggplot(house, aes(x = PavedDrive, fill = PavedDrive)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the PavedDrive Variable",
+       x = "PavedDrive",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+```{r 52}
+factor_var <- factor(house$PavedDrive, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$PavedDrive = numeric_labels
+print(house$PavedDrive[1:10])
+categories <- levels(factor_var)
+categories
+```
+
+**53. MiscFeature**
+Miscellaneous feature not covered in other categories
+
+```{r misc}
+library(ggplot2)
+my_colors <- c("#FFC300", "#FF5733", "#C70039", "#900C3F", "#581845", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999","pink")
+ggplot(house, aes(x = MiscFeature, fill = MiscFeature)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the MiscFeature Variable",
+       x = "MiscFeature",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+NA is no feature so cannot impute it
+
+```{r 53}
+factor_var <- factor(house$MiscFeature, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$MiscFeature = numeric_labels
+print(house$MiscFeature[1:10])
+categories <- levels(factor_var)
+categories
+```
+
+**54. SaleType**
+Type of sale
+     WD 	Warranty Deed - Conventional
+     CWD	Warranty Deed - Cash
+     VWD	Warranty Deed - VA Loan
+     New	Home just constructed and sold
+     COD	Court Officer Deed/Estate
+     Con	Contract 15% Down payment regular terms
+     ConLw	Contract Low Down payment and low interest
+     ConLI	Contract Low Interest
+     ConLD	Contract Low Down
+     Oth	Other
+     
+```{r SaleType}
+library(ggplot2)
+my_colors <- c("#FFC300", "#FF5733", "#C70039", "#900C3F", "#581845", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999","pink")
+ggplot(house, aes(x = SaleType, fill = SaleType)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the SaleType Variable",
+       x = "SaleType",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+Removed single NA value row
+```{r SingleNA}
+mode_value <- as.character(table(house$SaleType))[which.max(table(house$SaleType))]
+house$SaleType[is.na(house$SaleType)] <- mode_value
+sum(is.na(house$SaleType))
+```
+```{r 54}
+factor_var <- factor(house$SaleType, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$SaleType = numeric_labels
+print(house$SaleType[1:10])
+categories <- levels(factor_var)
+categories
+```
+**55. SaleCondition**
+
+```{r salecond}
+library(ggplot2)
+my_colors <- c("#FFC300", "#FF5733", "#C70039", "#900C3F", "#581845", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999","pink")
+ggplot(house, aes(x = SaleCondition, fill = SaleCondition)) +
+  geom_bar() +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Distribution of the SaleCondition Variable",
+       x = "SaleCondition",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+```{r 55}
+factor_var <- factor(house$SaleCondition, exclude = NULL)
+numeric_labels <- as.integer(factor_var)
+house$SaleCondition = numeric_labels
+print(house$SaleCondition[1:10])
+categories <- levels(factor_var)
+categories
+```
+```{r writeToData}
+write.csv(house,file="train.csv", row.names=FALSE, col.names = TRUE)
+```
+
+## Analysis with Target variable  
+```{r check all empty values}
+sum(is.na(house))
+```
+**1. MSSubClass**
+```{r MSsubclass vs SalePrice}
+colors <- c(rgb(0.894, 0.102, 0.110),
+            rgb(0.216, 0.494, 0.722),
+            rgb(0.302, 0.686, 0.290),
+            rgb(0.596, 0.306, 0.639),
+            rgb(1.000, 0.498, 0.000),
+            rgb(1.000, 1.000, 0.200),
+            rgb(0.651, 0.337, 0.157),
+            rgb(0.969, 0.510, 0.745),
+            rgb(0.200, 0.200, 0.200),
+            rgb(0.650, 0.700, 0.650),
+            rgb(0.800, 0.800, 0.800),
+            rgb(0.800, 0.800, 1.000),
+            rgb(0.000, 1.000, 1.000),
+            rgb(1.000, 0.800, 0.800),
+            rgb(0.000, 0.000, 0.000))
+
+# create a scatter plot with 15 different colors for MSSubClass
+ggplot(house, aes(x = factor(MSSubClass), y = SalePrice, color = factor(MSSubClass))) +
+  geom_point(size = 3, alpha = 0.8) +
+  scale_color_manual(values = colors) +
+  labs(x = "MSSubClass", y = "SalePrice") +
+  theme_classic()
+cor(house$MSSubClass, house$SalePrice)
+```
+```{r t1}
+res <- aov(SalePrice ~ MSSubClass, data = house)
+summary(res)
+```
+A low p value 0.00127 indicates that the variable MSSubClass is related to the target variable
+
+**2.MSZoning**
+```{r MSZoning vs SalePrice}
+library(ggplot2)
+colors <- c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33")
+
+# Create a box plot of SalePrice by MSZoning
+ggplot(house, aes(x = factor(MSZoning), y = SalePrice, fill = factor(MSZoning))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = colors) +
+  labs(x = "MSZoning", y = "SalePrice") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+From the graph we can infer that the category 2(Commercial) houses have a higher price comparatively and the Agriculture sector houses are cheaper
+
+```{r t2}
+res <- aov(SalePrice ~ MSZoning, data = house)
+summary(res)
+```
+A large F value here means that the difference in mean SalePrice for different MSZoning categories is large compared to the in category variability
+
+**3. LotFrontage**
+```{r LotFrontage vs SalePrice}
+ggplot(house, aes(x = LotFrontage, y = SalePrice)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(x = "LotFrontage (feet)", y = "SalePrice") +
+  theme_classic()
+cor(house$LotFrontage, house$SalePrice)
+
+```
+We cannot analyze much from the graph however most of the data seems to be near the 1-400000$ range when the distance is less than 150 feet
+
+```{r t3}
+res <- aov(SalePrice ~ LotFrontage, data = house)
+summary(res)
+```
+Again a very high F value and low p value indicate the rejection of null hypothesis i.e. the variable is strongly related to the target variable SalePrice
+
+**4. LotArea**
+```{r LotArea vs SalePrice}
+ggplot(house, aes(x = LotArea, y = SalePrice)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(x = "LotArea (feet)", y = "SalePrice") +
+  theme_classic()
+cor(house$LotArea, house$SalePrice)
+```
+From the graph we can see that the values vary over a big range for lot area between 0 to 30000 feet 
+
+```{r t4}
+correlation <- cor(house$LotArea, house$SalePrice)
+correlation
+ggplot(house, aes(x = LotArea, y = SalePrice)) +
+  geom_point(size = 3, alpha = 0.8) +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "LotArea", y = "SalePrice") +
+  annotate("text", x = max(house$LotArea), y = max(house$SalePrice),
+           label = paste("Correlation =", round(correlation, 2))) +
+  theme_classic()
+```
+A Correlation value of 0.26 indicates some positive relation i.e. an increase here leads to increase in the SalePrice
+
+**5. Street**
+
+```{r Street vs SalePrice}
+library(ggplot2)
+colors <- c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33")
+
+# Create a box plot of SalePrice by Street
+ggplot(house, aes(x = factor(Street), y = SalePrice, fill = factor(Street))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = colors) +
+  labs(x = "Street", y = "SalePrice") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+Paved Streets have a higher price for the house compared to Gravel streets
+
+```{r t5}
+res <- aov(SalePrice ~ Street, data = house)
+summary(res)
+```
+
+The F and p value suggest that the mean is not very different for the categories and it is difficult to identify a relation with the category and target variable(unable to reject null hypothesis)
+
+**6. Alley**
+
+```{r Alley vs SalePrice}
+library(ggplot2)
+colors <- c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33")
+
+ggplot(house, aes(x = factor(Alley), y = SalePrice, fill = factor(Alley))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = colors) +
+  labs(x = "Alley", y = "SalePrice") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+The paved Alleys have higher prices compared to no alley access and gravel alley
+
+```{r t6}
+res <- aov(SalePrice ~ Alley, data = house)
+summary(res)
+```
+A positive correlation and high F value indicate positive relation between the two variables
+
+**7. LotShape**
+
+```{r LotShape vs SalePrice}
+library(ggplot2)
+colors <- c("#377EB8", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33")
+
+ggplot(house, aes(x = factor(LotShape), y = SalePrice, fill = factor(LotShape))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = colors) +
+  labs(x = "LotShape", y = "SalePrice") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+From the graph we can see that the 4th category which is irregular lot shape has the lowest SalePrices and the rest have close means
+
+```{r t7}
+res <- aov(SalePrice ~ LotShape, data = house)
+summary(res)
+kruskal.test(house$LotShape ~ house$SalePrice)
+
+```
+
+**8. LandContour**
+
+```{r LandContour vs SalePrice}
+library(ggplot2)
+colors <- c("#377EB8", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33")
+
+ggplot(house, aes(x = factor(LandContour), y = SalePrice, fill = factor(LandContour))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = colors) +
+  labs(x = "LandContour", y = "SalePrice") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+From the graph clearly the banked and hillside houses have a higher sale Price 
+
+```{r t8}
+res <- aov(SalePrice ~ LandContour, data = house)
+summary(res)
+```
+**9. Utilities**
+
+```{r Utilities vs SalePrice}
+library(ggplot2)
+colors <- c("#377EB8", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33")
+
+ggplot(house, aes(x = factor(Utilities), y = SalePrice, fill = factor(Utilities))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = colors) +
+  labs(x = "Utilities", y = "SalePrice") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+Everyone has the same utility and this can be seen from the graph
+
+**10. LotConfig**
+
+```{r LotConfig vs SalePrice}
+library(ggplot2)
+colors <- c("#377EB8", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33")
+
+ggplot(house, aes(x = factor(LotConfig), y = SalePrice, fill = factor(LotConfig))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = colors) +
+  labs(x = "LotConfig", y = "SalePrice") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+Corner lots have a higher price compared to others
+```{r t10}
+res <- aov(SalePrice ~ LotConfig, data = house)
+summary(res)
+```
+This test suggests that there is a weak relation between the two variables
+
+**11. LandSlope**
+
+```{r LandSlope vs SalePrice}
+library(ggplot2)
+colors <- c("#377EB8", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33")
+
+ggplot(house, aes(x = factor(LandSlope), y = SalePrice, fill = factor(LandSlope))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = colors) +
+  labs(x = "LandSlope", y = "SalePrice") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r t11}
+res <- aov(SalePrice ~ LandSlope, data = house)
+summary(res)
+```
+**12. Neighborhood**
+
+```{r Neighborhood vs SalePrice}
+library(ggplot2)
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue", "#F0E442", "#FF61C3", "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#00FF7F", "#FFD700", "#B22222", "#FFC0CB", "#483D8B", "#32CD32", "#FF1493", "#DAA520", "#800000", "#7B68EE","black", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33")
+ggplot(house, aes(x = factor(Neighborhood), y = SalePrice, fill = factor(Neighborhood))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "Neighborhood", y = "SalePrice") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+It is difficult to directly analyze something from the graph and thus we perform some tests further
+
+```{r t12}
+kruskal.test(house$Neighborhood ~ house$SalePrice)
+```
+This suggests that the target variable change with the Neighborhood ,there are certainly some relevant categories which are higher than average
+
+**13. Condition1**
+```{r Condition1 vs SalePrice}
+library(ggplot2)
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue", "#F0E442", "#FF61C3", "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33")
+ggplot(house, aes(x = factor(Condition1), y = SalePrice, fill = factor(Condition1))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "Condition1", y = "SalePrice") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r t13}
+kruskal.test(house$Condition1 ~ house$SalePrice)
+
+```
+the test suggests that both variables dont have a strong relation and can be used for prediction further
+
+**14. Condition2**
+
+```{r Condition2 vs SalePrice}
+library(ggplot2)
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4","#00FFFF", "#FFA07A", "#20B2AA",  "#6A5ACD", "#FFFF33")
+ggplot(house, aes(x = factor(Condition2), y = SalePrice, fill = factor(Condition2))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "Condition2", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+Clearly category 55 has a high SalePrice as compared to any other category 
+
+```{r t14}
+kruskal.test(house$Condition2 ~ house$SalePrice)
+```
+This indicates that there is significant relation between the variables
+
+*15. BldgType**
+
+```{r BldgType vs SalePrice}
+library(ggplot2)
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4","#00FFFF", "#FFA07A", "#20B2AA",  "#6A5ACD", "#FFFF33")
+ggplot(house, aes(x = factor(BldgType), y = SalePrice, fill = factor(BldgType))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "BldgType", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+There is not much visible difference from the graph for the changes in Price
+
+```{r t15}
+kruskal.test(house$BldgType ~ house$SalePrice)
+
+```
+The big p value indicates that there is not quite a difference between various categories for the target variable
+
+**16_1. HouseStyle**
+
+```{r HouseStyle vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue", "#F0E442", "#FF61C3", "#00FFFF", "#FFA07A")
+ggplot(house, aes(x = factor(HouseStyle), y = SalePrice, fill = factor(HouseStyle))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "HouseStyle", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+Clearly various categories have quite different means and values for Price
+
+```{r t16_1}
+kruskal.test(house$HouseStyle ~ house$SalePrice)
+```
+From the test also we see the same
+
+**17. OverallQual**
+
+```{r OverallQual vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue", "#F0E442", "#FF61C3", "#00FFFF", "#FFA07A")
+ggplot(house, aes(x = factor(OverallQual), y = SalePrice, fill = factor(OverallQual))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "HouseStyle", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+A clear and huge difference as the rating increase the prices of the house have risen, a clear positive correlation
+```{r t16}
+kruskal.test(house$OverallQual ~ house$SalePrice)
+```
+The test also points out the same suggesting relation between the two variables
+
+**17. OverallCond**
+
+```{r OverallCond vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue", "#F0E442", "#FF61C3", "#00FFFF", "#FFA07A")
+ggplot(house, aes(x = factor(OverallCond), y = SalePrice, fill = factor(OverallCond))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "OverallCond", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+An almost increasing rating leads to higher prices except the fifth category which is the average condition category of the house
+
+```{r t17}
+kruskal.test(house$OverallCond ~ house$SalePrice)
+```
+The test suggests that the overall condition is not leading to a huge difference in between its categories
+
+**18. YearBuilt**
+
+```{r 18.YearBuilt vs SalePrice}
+ggplot(house, aes(x = YearBuilt, y = SalePrice)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(x = "YearBuilt", y = "SalePrice") +
+  theme_classic()
+
+```
+We can clearly see as the year increases the price have a steady increase 
+
+```{r t18}
+kruskal.test(house$YearBuilt ~ house$SalePrice)
+cor(house$YearBuilt, house$SalePrice)
+```
+A very good correlation indicating linear increase with year and also a very small p value indicating the strong relation with the target variable
+
+**19. YearRemodAdd**
+
+```{r YearRemodAdd vs SalePrice}
+ggplot(house, aes(x = YearRemodAdd, y = SalePrice)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(x = "YearRemodAdd", y = "SalePrice") +
+  theme_classic()
+
+```
+again a similar anayais to year built
+
+```{r t19}
+kruskal.test(house$YearRemodAdd ~ house$SalePrice)
+cor(house$YearRemodAdd, house$SalePrice)
+```
+Similar to year built
+
+**20. RoofStyle**
+
+```{r RoofStyle vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue", "#F0E442", "#FF61C3", "#00FFFF", "#FFA07A")
+ggplot(house, aes(x = factor(RoofStyle), y = SalePrice, fill = factor(RoofStyle))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "RoofStyle", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+Not much difference across categories 
+```{r t20}
+kruskal.test(house$RoofStyle ~ house$SalePrice)
+```
+**21. RoofMatl**
+
+```{r RoofMatl vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue", "#F0E442", "#FF61C3", "#00FFFF", "#FFA07A")
+ggplot(house, aes(x = factor(RoofMatl), y = SalePrice, fill = factor(RoofMatl))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "RoofMatl", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+Very vivid output having different prices for 8th category(high price)
+
+```{r t21}
+kruskal.test(house$RoofMatl ~ house$SalePrice)
+```
+Clearly the values suggest no relation between the two variables
+
+**21_1. Exterior1st**
+
+```{r Exterior1st vs SalePrice}
+library(ggplot2)
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue", "#F0E442", "#FF61C3", "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33")
+ggplot(house, aes(x = factor(Exterior1st), y = SalePrice, fill = factor(Exterior1st))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "Exterior1st", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+QUite some variation among categories for the prices of house
+
+```{r t21_1}
+kruskal.test(house$Exterior1st ~ house$SalePrice)
+summary(aov(Exterior1st~SalePrice,data=house))
+```
+the ANOVA test suggests a relation with the target variable because of mean differences between various categories but the Kruskal wallis test looks on the medians of the categories which would not be quite different
+
+**22. Exterior2nd**
+```{r Exterior2nd vs SalePrice}
+library(ggplot2)
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue", "#F0E442", "#FF61C3", "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(Exterior2nd), y = SalePrice, fill = factor(Exterior2nd))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "Exterior2nd", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+Similar analysis like the previous variable
+```{r t22}
+kruskal.test(house$Exterior2nd ~ house$SalePrice)
+summary(aov(Exterior2nd~SalePrice,data=house))
+```
+**23. MasVnrArea**
+
+```{r MasVnrArea vs SalePrice}
+ggplot(house, aes(x = MasVnrArea, y = SalePrice)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(x = "MasVnrArea", y = "SalePrice") +
+  theme_classic()
+
+```
+This suggests that the prices increase gradually over the Area of veneer
+
+```{r t23}
+kruskal.test(house$MasVnrArea ~ house$SalePrice)
+cor(house$MasVnrArea, house$SalePrice)
+```
+The results also suggest a strong relation between them
+
+**24. ExterQual**
+
+```{r ExterQual vs SalePrice}
+library(ggplot2)
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue", "#F0E442", "#FF61C3", "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(ExterQual), y = SalePrice, fill = factor(ExterQual))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "ExterQual", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+A big difference between various categories
+```{r t24}
+kruskal.test(house$ExterQual ~ house$SalePrice)
+summary(aov(ExterQual~SalePrice,data=house))
+```
+Both tests indicate a very strong relation between the two variables
+
+**25. ExterCond**
+```{r ExterCond vs SalePrice}
+library(ggplot2)
+my_colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue", "#F0E442", "#FF61C3", "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(ExterCond), y = SalePrice, fill = factor(ExterCond))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "ExterCond", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+Different categories have different prices cannot infer much from it
+
+```{r t25}
+kruskal.test(house$ExterCond ~ house$SalePrice)
+summary(aov(ExterCond~SalePrice,data=house))
+```
+This shows that the mean of categories varies largely with the price but no the medians hence a realtion with the Saleprice is evident
+
+**26. Foundation**
+
+```{r Foundation vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue", "#F0E442",  "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(Foundation), y = SalePrice, fill = factor(Foundation))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "Foundation", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+```{r t26}
+kruskal.test(house$Foundation ~ house$SalePrice)
+summary(aov(Foundation~SalePrice,data=house))
+```
+both the tests suggest a strong relation with the Saleprice
+
+**27. BsmtQual**
+
+```{r BsmtQual vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue",   "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(BsmtQual), y = SalePrice, fill = factor(BsmtQual))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "BsmtQual", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+```{r t27}
+kruskal.test(house$BsmtQual ~ house$SalePrice)
+summary(aov(BsmtQual~SalePrice,data=house))
+```
+A small p value for both clearly indicates the dtrong relation with the prediction variable
+
+**28. BsmtCond**
+
+```{r BsmtCond vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue",   "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(BsmtCond), y = SalePrice, fill = factor(BsmtCond))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "BsmtCond", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+A difference is very visible in the various categories
+
+```{r t28}
+kruskal.test(house$BsmtCond ~ house$SalePrice)
+summary(aov(BsmtCond~SalePrice,data=house))
+```
+A small p value with regards to median suggests that there is a chance of outliers also
+
+**29. BsmtExposure**
+
+```{r BsmtExposure vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue",   "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(BsmtExposure), y = SalePrice, fill = factor(BsmtExposure))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "BsmtExposure", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+Clearly a decreasing trend in the geraph is visible as the exposure decrease price decreases
+
+```{r t29}
+kruskal.test(house$BsmtExposure ~ house$SalePrice)
+summary(aov(BsmtExposure~SalePrice,data=house))
+```
+Very small p values also sugest the same
+
+**30. BsmtFinType1**
+
+```{r BsmtFinType1 vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue",   "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(BsmtFinType1), y = SalePrice, fill = factor(BsmtFinType1))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "BsmtFinType1", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+Something cannot be deduced directly from the graph 
+
+```{r t30}
+kruskal.test(house$BsmtFinType1 ~ house$SalePrice)
+summary(aov(BsmtFinType1~SalePrice,data=house))
+```
+with respect to mean there is a difference and no presence of maybe outliers due to lack of differentiation in median
+
+**31. BsmtFinSF1**
+
+```{r BsmtFinSF1 vs SalePrice}
+ggplot(house, aes(x = BsmtFinSF1, y = SalePrice)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(x = "BsmtFinSF1", y = "SalePrice") +
+  theme_classic()
+
+```
+This suggests that the prices increase gradually over the finished square feet
+
+```{r t31}
+kruskal.test(house$BsmtFinSF1 ~ house$SalePrice)
+cor(house$BsmtFinSF1, house$SalePrice)
+```
+A positive correlation also suggests a linear positive relation with the target variable along with a small p value
+
+**32. BsmtFinType2**
+
+```{r BsmtFinType2 vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue",   "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(BsmtFinType2), y = SalePrice, fill = factor(BsmtFinType2))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "BsmtFinType2", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+A very less difference can be seen from the graph
+
+```{r t32}
+kruskal.test(house$BsmtFinType1 ~ house$SalePrice)
+summary(aov(BsmtFinType1~SalePrice,data=house))
+```
+a small p value for mean also indicates linear type relation with the target variable
+
+**33. BsmtFinSF2**
+
+```{r BsmtFinSF2 vs SalePrice}
+ggplot(house, aes(x = BsmtFinSF2, y = SalePrice)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(x = "BsmtFinSF2", y = "SalePrice") +
+  theme_classic()
+
+```
+This suggests that the prices decrease once and then similar over the finished square feet
+
+```{r t33}
+kruskal.test(house$BsmtFinSF2 ~ house$SalePrice)
+cor(house$BsmtFinSF2, house$SalePrice)
+```
+Clearly there is a negative relation with the output because of sudden decrease
+
+
+**34. BsmtUnfSF**
+
+```{r BsmtUnfSF vs SalePrice}
+ggplot(house, aes(x = BsmtUnfSF, y = SalePrice)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(x = "BsmtUnfSF", y = "SalePrice") +
+  theme_classic()
+
+```
+A very gradual increase with the uninfished square feet area(maybe because poeple want to build their own house)
+
+```{r t34}
+kruskal.test(house$BsmtUnfSF ~ house$SalePrice)
+cor(house$BsmtUnfSF, house$SalePrice)
+```
+A positive correlation but not a very strong relation with the target variable
+
+**35. TotalBsmtSF**
+
+```{r TotalBsmtSF vs SalePrice}
+ggplot(house, aes(x = TotalBsmtSF, y = SalePrice)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(x = "TotalBsmtSF", y = "SalePrice") +
+  theme_classic()
+
+```
+a very big increase in the price as the total square feet increases
+```{r t35}
+kruskal.test(house$TotalBsmtSF ~ house$SalePrice)
+cor(house$TotalBsmtSF, house$SalePrice)
+```
+A very high postiive correlation with the output is clearly visible along with a very small p value
+
+**36. Heating**
+
+```{r Heating vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue",   "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(Heating), y = SalePrice, fill = factor(Heating))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "Heating", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+Two categories majorly have prices in the same range and the rest have few values
+
+```{r t36}
+kruskal.test(house$Heating ~ house$SalePrice)
+summary(aov(Heating~SalePrice,data=house))
+```
+Clearly the first test suggests that there is similarity based on medians which is clearly visible and the means show a change because of the posiiblity that these just may be outliers
+
+**37. HeatingQC**
+
+```{r HeatingQC vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue",   "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(HeatingQC), y = SalePrice, fill = factor(HeatingQC))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "HeatingQC", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+Clearly the excellent range have a higher price 
+```{r t37}
+kruskal.test(house$HeatingQC ~ house$SalePrice)
+summary(aov(HeatingQC~SalePrice,data=house))
+```
+both small p values indicate that the variable has a strong relation with the target variable
+
+**38. CentralAir**
+
+```{r CentralAir vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue",   "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(CentralAir), y = SalePrice, fill = factor(CentralAir))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "CentralAir", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+Houses having central air conditioning have a higher rate clearly
+```{r t38}
+kruskal.test(house$CentralAir ~ house$SalePrice)
+summary(aov(CentralAir~SalePrice,data=house))
+```
+Small p values also indicate its strong relation with the target variable
+
+**39. Electrical**
+
+```{r Electrical vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue",   "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(Electrical), y = SalePrice, fill = factor(Electrical))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "Electrical", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+Clearly the mix type has higher price range, rest of them follow a decreasing trend due to decrease in quality 
+
+```{r t39}
+kruskal.test(house$Electrical ~ house$SalePrice)
+summary(aov(Electrical~SalePrice,data=house))
+```
+p values for mean also suggest the same inference from the graph
+
+**40. X1stFlrSF**
+
+```{r X1stFlrSF vs SalePrice}
+ggplot(house, aes(x = X1stFlrSF, y = SalePrice)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(x = "X1stFlrSF", y = "SalePrice") +
+  theme_classic()
+
+```
+a almost linear increase in the price as the first floor square feet increases
+```{r t40}
+kruskal.test(house$X1stFlrSF ~ house$SalePrice)
+cor(house$X1stFlrSF, house$SalePrice)
+```
+a small p value lesser than confidence level also indicates the same and the positive correlation also points out the same fact
+
+**41. X2ndFlrSF**
+
+```{r X2ndFlrSF vs SalePrice}
+ggplot(house, aes(x = X2ndFlrSF, y = SalePrice)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(x = "X2ndFlrSF", y = "SalePrice") +
+  theme_classic()
+
+```
+a almost linear increase in the price as the second floor square feet increases similar to above variable
+
+```{r t41}
+kruskal.test(house$X2ndFlrSF ~ house$SalePrice)
+cor(house$X2ndFlrSF, house$SalePrice)
+```
+**42. LowQualFinSF**
+
+```{r LowQualFinSF vs SalePrice}
+ggplot(house, aes(x = LowQualFinSF, y = SalePrice)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(x = "LowQualFinSF", y = "SalePrice") +
+  theme_classic()
+
+```
+a very scattered chart with probable outliers
+
+```{r t42}
+kruskal.test(house$LowQualFinSF ~ house$SalePrice)
+cor(house$LowQualFinSF, house$SalePrice)
+```
+a high p value suggests difficult inference from the variable for the target variable
+
+
+**43. GrLivArea**
+
+```{r GrLivArea vs SalePrice}
+ggplot(house, aes(x = GrLivArea, y = SalePrice)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(x = "GrLivArea", y = "SalePrice") +
+  theme_classic()
+
+```
+a almost linear increase in the price as the square feet increases
+
+```{r t42_1}
+kruskal.test(house$GrLivArea ~ house$SalePrice)
+cor(house$GrLivArea, house$SalePrice)
+```
+A very strong linear relationship is visible
+
+**43. BsmtFullBath**
+
+```{r BsmtFullBath vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue",   "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(BsmtFullBath), y = SalePrice, fill = factor(BsmtFullBath))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "BsmtFullBath", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+Almost equal distribution
+
+```{r t43}
+kruskal.test(house$BsmtFullBath ~ house$SalePrice)
+summary(aov(BsmtFullBath~SalePrice,data=house))
+```
+A high p value suggests less difference between categories 
+
+**44. BsmtHalfBath**
+
+```{r BsmtHalfBath vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue",   "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(BsmtHalfBath), y = SalePrice, fill = factor(BsmtHalfBath))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "BsmtHalfBath", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+Difficult to infer from the graph
+
+```{r t44}
+kruskal.test(house$BsmtHalfBath ~ house$SalePrice)
+summary(aov(BsmtHalfBath~SalePrice,data=house))
+```
+Very less difference in the mean as well as median indicating no relation at all with the target variable
+
+**45. FullBath**
+
+```{r FullBath vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue",   "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(FullBath), y = SalePrice, fill = factor(FullBath))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "FullBath", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+A high price for 3rd category
+
+```{r t45}
+kruskal.test(house$FullBath ~ house$SalePrice)
+summary(aov(FullBath~SalePrice,data=house))
+```
+Clearly small p values suggest that the price changes are present within categories
+
+**46. HalfBath**
+
+```{r HalfBath vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue",   "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(HalfBath), y = SalePrice, fill = factor(HalfBath))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "HalfBath", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+Less difference between various categories 
+
+```{r t46}
+kruskal.test(house$HalfBath ~ house$SalePrice)
+summary(aov(HalfBath~SalePrice,data=house))
+```
+Less difference on the grounds of median but means separate the categories
+
+**47. BedroomAbvGr**
+```{r BedroomAbvGr vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue",   "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(BedroomAbvGr), y = SalePrice, fill = factor(BedroomAbvGr))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "BedroomAbvGr", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+Difference between various categories is evident
+
+```{r t47}
+kruskal.test(house$BedroomAbvGr ~ house$SalePrice)
+summary(aov(BedroomAbvGr~SalePrice,data=house))
+```
+The p values also suggest the same
+
+**48. KitchenAbvGr**
+
+```{r KitchenAbvGr vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue",   "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(KitchenAbvGr), y = SalePrice, fill = factor(KitchenAbvGr))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "KitchenAbvGr", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r t48}
+kruskal.test(house$KitchenAbvGr ~ house$SalePrice)
+summary(aov(KitchenAbvGr~SalePrice,data=house))
+```
+Small p value for anova test suggest different means within categories
+
+**49. KitchenQual**
+
+```{r KitchenQual vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue",   "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(KitchenQual), y = SalePrice, fill = factor(KitchenQual))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "KitchenQual", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+A clear difference on excellent kitchen qualities
+
+```{r t49}
+kruskal.test(house$KitchenQual ~ house$SalePrice)
+summary(aov(KitchenQual~SalePrice,data=house))
+```
+A very strong relation with the target variable is indicative
+
+**50.TotRmsAbvGrd**
+
+```{r TotRmsAbvGrd vs SalePrice}
+library(ggplot2)
+ggplot(house, aes(x = TotRmsAbvGrd, y = SalePrice)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(x = "TotRmsAbvGrd", y = "SalePrice") +
+  theme_classic()
+
+```
+a increase in price as rooms increase
+
+```{r t50}
+kruskal.test(house$TotRmsAbvGrd ~ house$SalePrice)
+cor(house$TotRmsAbvGrd, house$SalePrice)
+```
+Very strong relation with the target variable
+
+**51. Functional**
+
+```{r Functional vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue",   "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(Functional), y = SalePrice, fill = factor(Functional))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "Functional", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r t51}
+kruskal.test(house$Functional ~ house$SalePrice)
+summary(aov(Functional~SalePrice,data=house))
+```
+A significant difference with respect to mean value
+
+**52. Fireplaces**
+
+```{r Fireplaces vs SalePrice}
+library(ggplot2)
+ggplot(house, aes(x = Fireplaces, y = SalePrice)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(x = "Fireplaces", y = "SalePrice") +
+  theme_classic()
+
+```
+1 to 2 fireplaces have higher rates 
+
+```{r t52}
+kruskal.test(house$Fireplaces ~ house$SalePrice)
+cor(house$Fireplaces, house$SalePrice)
+```
+strong positive correlation and a small p value indicate the same
+
+**53. FireplaceQu**
+```{r FireplaceQu vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue",   "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(FireplaceQu), y = SalePrice, fill = factor(FireplaceQu))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "FireplaceQu", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r t53}
+kruskal.test(house$FireplaceQu ~ house$SalePrice)
+summary(aov(FireplaceQu~SalePrice,data=house))
+```
+A very strong relation both from the graph as well as the p values
+
+**54. GarageType**
+
+```{r GarageType vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue",   "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(GarageType), y = SalePrice, fill = factor(GarageType))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "GarageType", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r t54}
+kruskal.test(house$GarageType ~ house$SalePrice)
+summary(aov(GarageType~SalePrice,data=house))
+```
+Again a strong variation with the target variable
+
+**55. GarageYrBlt**
+
+```{r GarageYrBlt vs SalePrice}
+library(ggplot2)
+ggplot(house, aes(x = GarageYrBlt, y = SalePrice)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(x = "GarageYrBlt", y = "SalePrice") +
+  theme_classic()
+
+```
+1 Rates increase gradually as the year goes ahead
+
+```{r t55}
+kruskal.test(house$GarageYrBlt ~ house$SalePrice)
+cor(house$GarageYrBlt, house$SalePrice)
+```
+A positive correlation also suggests the same
+
+**56. GarageFinish**
+
+```{r GarageFinish vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue",   "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(GarageFinish), y = SalePrice, fill = factor(GarageFinish))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "GarageFinish", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+A steady decrease as the quality goes from top to no garage at all in the prices
+
+```{r t56}
+kruskal.test(house$GarageFinish ~ house$SalePrice)
+summary(aov(GarageFinish~SalePrice,data=house))
+```
+Same indication from the p values also
+
+**57. GarageCars**
+
+```{r GarageCars vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue",   "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(GarageCars), y = SalePrice, fill = factor(GarageCars))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "GarageCars", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+garage with capacity of 3 cars have the highest rates
+
+```{r t57}
+kruskal.test(house$GarageCars ~ house$SalePrice)
+summary(aov(GarageCars~SalePrice,data=house))
+```
+Small p values suggest the similar analysis for a strong relation between the two variables
+
+**58. GarageArea**
+
+```{r GarageArea vs SalePrice}
+library(ggplot2)
+ggplot(house, aes(x = GarageArea, y = SalePrice)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(x = "GarageArea", y = "SalePrice") +
+  theme_classic()
+
+```
+Rates increase gradually as the area increases
+
+```{r t58}
+kruskal.test(house$GarageArea ~ house$SalePrice)
+cor(house$GarageArea, house$SalePrice)
+```
+A strong positive correlation also gives the same insight
+
+**59. GarageQual**
+
+```{r GarageQual vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue",   "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(GarageQual), y = SalePrice, fill = factor(GarageQual))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "GarageQual", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+Excellent quality garages have a high price for the houses compared to the other qualities 
+
+```{r t59}
+kruskal.test(house$GarageQual ~ house$SalePrice)
+summary(aov(GarageQual~SalePrice,data=house))
+```
+P values suggest that the variable doesnt hold a strong relation and we have evidence to reject the null hypothesis
+
+**60. GarageCond**
+
+```{r GarageCond vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue",   "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(GarageCond), y = SalePrice, fill = factor(GarageCond))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "GarageCond", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r t60}
+kruskal.test(house$GarageCond ~ house$SalePrice)
+summary(aov(GarageCond~SalePrice,data=house))
+```
+The values dont suggest a relation among the variables
+
+**61. PavedDrive**
+
+```{r PavedDrive vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue",   "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(PavedDrive), y = SalePrice, fill = factor(PavedDrive))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "PavedDrive", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+Category 3 have comparatively higher prices to other
+
+```{r t61}
+kruskal.test(house$PavedDrive ~ house$SalePrice)
+summary(aov(PavedDrive~SalePrice,data=house))
+```
+Mean of categories is different however median values are similar(maybe outliers)
+
+**62. WoodDeckSF**
+
+```{r WoodDeckSF vs SalePrice}
+library(ggplot2)
+ggplot(house, aes(x = WoodDeckSF, y = SalePrice)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(x = "WoodDeckSF", y = "SalePrice") +
+  theme_classic()
+
+```
+Rates increase gradually as the year goes ahead
+
+```{r t62}
+kruskal.test(house$WoodDeckSF ~ house$SalePrice)
+cor(house$WoodDeckSF, house$SalePrice)
+```
+A positive correlation with the target
+
+**63. OpenPorchSF**
+
+```{r OpenPorchSF vs SalePrice}
+library(ggplot2)
+ggplot(house, aes(x = OpenPorchSF, y = SalePrice)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(x = "OpenPorchSF", y = "SalePrice") +
+  theme_classic()
+
+```
+Similar trend like previous variable
+
+```{r t63}
+kruskal.test(house$OpenPorchSF ~ house$SalePrice)
+cor(house$OpenPorchSF, house$SalePrice)
+```
+
+**64. X3SsnPorch**
+
+```{r X3SsnPorch vs SalePrice}
+library(ggplot2)
+ggplot(house, aes(x = X3SsnPorch, y = SalePrice)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(x = "X3SsnPorch", y = "SalePrice") +
+  theme_classic()
+
+```
+
+```{r t64}
+kruskal.test(house$X3SsnPorch ~ house$SalePrice)
+cor(house$X3SsnPorch, house$SalePrice)
+```
+Almost no inference can be drawn from this variable
+
+**65. ScreenPorch**
+
+```{r ScreenPorch vs SalePrice}
+library(ggplot2)
+ggplot(house, aes(x = ScreenPorch, y = SalePrice)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(x = "ScreenPorch", y = "SalePrice") +
+  theme_classic()
+
+```
+
+```{r t65}
+kruskal.test(house$ScreenPorch ~ house$SalePrice)
+cor(house$ScreenPorch, house$SalePrice)
+```
+Again very less inference can be drawn from it
+
+**66. PoolArea**
+
+```{r PoolArea vs SalePrice}
+library(ggplot2)
+ggplot(house, aes(x = PoolArea, y = SalePrice)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(x = "PoolArea", y = "SalePrice") +
+  theme_classic()
+
+```
+
+Almost no pool in most of the houses make this variable redundant
+
+**67. Fence**
+
+```{r Fence vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue",   "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(Fence), y = SalePrice, fill = factor(Fence))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "Fence", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r t67}
+kruskal.test(house$Fence ~ house$SalePrice)
+summary(aov(Fence~SalePrice,data=house))
+```
+Difference in mean can be seen clearly but the medians tend to be similar
+
+**68. MiscFeature**
+```{r MiscFeature vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue",   "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(MiscFeature), y = SalePrice, fill = factor(MiscFeature))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "MiscFeature", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+quite a difference between categories
+
+```{r t68}
+kruskal.test(house$MiscFeature ~ house$SalePrice)
+summary(aov(MiscFeature~SalePrice,data=house))
+```
+Again a difference in the mean values can be seen with the tests
+
+**69. MiscVal**
+
+```{r MiscVal vs SalePrice}
+library(ggplot2)
+ggplot(house, aes(x = MiscVal, y = SalePrice)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(x = "MiscVal", y = "SalePrice") +
+  theme_classic()
+
+```
+Almost all houses don't have a miscellaneous feature making it redundant
+
+
+**70. MoSold**
+
+```{r MoSold vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue",   "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(MoSold), y = SalePrice, fill = factor(MoSold))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "MoSold", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+Almost no difference between months as far as prices are concerned
+
+**71. YrSold**
+
+```{r YrSold vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue",   "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(YrSold), y = SalePrice, fill = factor(YrSold))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "YrSold", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+Again almost no difference between the years of the selling of house
+
+**72. SaleType**
+
+```{r SaleType vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue",   "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(SaleType), y = SalePrice, fill = factor(SaleType))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "SaleType", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r t72}
+kruskal.test(house$SaleType ~ house$SalePrice)
+summary(aov(SaleType~SalePrice,data=house))
+```
+A strong relation with the target variable is visible
+
+**73. SaleCondition**
+
+```{r SaleCondition vs SalePrice}
+library(ggplot2)
+my_colors <- c( "#00BFC4", "#C77CFF", "#619CFF", "#999999", "blue",   "#00FFFF", "#FFA07A", "#20B2AA", "#FF7F50", "#6A5ACD", "#FFFF33","black")
+ggplot(house, aes(x = factor(SaleCondition), y = SalePrice, fill = factor(SaleCondition))) +
+  geom_boxplot(alpha = 0.8, color = "black", outlier.shape = NA) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "SaleCondition", y = "SalePrice") +
+  theme_minimal() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+```{r t73}
+kruskal.test(house$SaleCondition ~ house$SalePrice)
+summary(aov(SaleCondition~SalePrice,data=house))
+```
+A very strong relation with the target variable is visible 
+
+## Dimension Reduction
+
+We check the correlation of variables to check the relation between them
+
+We remove those variables which had not much relation with the Sale Price derived from graphical analysis and tests
+
+```{r var remove}
+
+reduced = subset(house, select = c(-YrSold,-MoSold,-MiscVal,         -PoolArea,-ScreenPorch,-X3SsnPorch,-GarageCond,-GarageQual,-BsmtFullBath,-LowQualFinSF,-Heating))
+
+
+```
+
+
+```{r c1}
+correlation <- cor(house$Exterior1st, house$Exterior2nd)
+
+plot(house$Exterior1st, house$Exterior2nd, pch = 16, col = "blue", xlab = "Exterior1st", ylab = "Exterior2nd",
+     main = paste("Correlation = ", round(correlation, 2)))
+
+
+```
+Clearly a very high overlap between the two fields with +0.85 correlation
+
+```{r r1}
+reduced = subset(reduced, select = -Exterior2nd)
+```
+
+```{r c2}
+correlation <- cor(house$BsmtFinType1, house$BsmtFinType2)
+
+plot(house$BsmtFinType1, house$BsmtFinType1, pch = 16, col = "purple", xlab = "BsmtFinType1", ylab = "BsmtFinType2",
+     main = paste("Correlation = ", round(correlation, 2)))
+
+
+```
+From the plots done while analyzing variables with the target variable we can see that the Type 1 and Type 2 of BsmtFin had quite similar plots and the exact same categories and hence we can remove type 2 because it measures more than 1 which is not required
+
+```{r r2}
+reduced = subset(reduced, select = -BsmtFinType1)
+```
+
+```{r c3}
+correlation <- cor(house$X1stFlrSF, house$X2ndFlrSF)
+
+plot(house$X1stFlrSF, house$X2ndFlrSF, pch = 16, col = "black", xlab = "X1stFlrSF", ylab = "X2ndFlrSF",
+     main = paste("Correlation = ", round(correlation, 2)))
+
+
+```
+We can drop one of the variables which has less relation with the target variable as both follow a linear relation with the target variable, we remove the 2nd because it had a correlation of 0.3 while the first variable has a correlation of 0.6 with the Sale Price
+```{r r3}
+reduced = subset(reduced, select = -X2ndFlrSF)
+```
+
+We remove utilities also as it consists of all values in a signle class. Also central is a almost similar variable of centralAir so we drop it. 
+```{r r4}
+reduced = subset(reduced, select = c(-Utilities,-Central))
+```
+
+BldgType also had a high p value on performing the tests and can be removed. Also LotConfig had a smaller p value so we drop it.
+```{r r5}
+reduced = subset(reduced, select = c(-BldgType,-LotConfig,-BsmtUnfSF))
+```
+
+Various other variables which had either a low p value or very less relation with the target variable can also be removed to reduce dimensions further
+```{r trial}
+reduced = subset(house, select = c(-LowQualFinSF,-MiscFeature,-Foundation,-Electrical,-Fence,-HalfBath,-RoofStyle,-MasVnrType,-GarageCond,-MSSubClass,-YrSold,-RoofMatl,-BsmtFinType2,-FireplaceQu,-EnclosedPorch,-WoodDeckSF,-BsmtCond,-HouseStyle,-BedroomAbvGr,-BsmtHalfBath,-GarageYrBlt,-LotFrontage,-ExterCond,-BsmtFinSF2,-MasVnrArea,-Street,-Condition1,-OpenPorchSF,-HeatingQC,-LandSlope))
+```
+
+```{r finalSet}
+house = reduced
+write.csv(house,"train.csv")
+```
+
+
+##Modelling
+
+###Validation and train split
+
+```{r validation set}
+#set.seed(123)
+train_data = read.csv("D:/SEM-6/Statistics/Project/Housing Prices/train.csv", header = TRUE)
+
+train_indices <- sample(nrow(train_data), round(0.8 * nrow(train_data)), replace = FALSE)
+train <- train_data[train_indices, ]
+validation <- train_data[-train_indices, ]
+temp = validation
+#validation <- validation[, -which(names(validation) == "SalePrice")]
+#write.csv(validation,"validation.csv")
+```
+
+```{r validTest LM}
+library(caret)
+
+lm_model = train(SalePrice ~ ., data=train,method="lm")
+predictions <- predict(lm_model, newdata = validation)
+summary(predictions)
+```
+
+```{r MSE}
+summary(predictions)
+mse <- mean((predictions - validation$SalePrice))
+mse
+```
+
+```{r validTest randomForest}
+library(randomForest)
+rf_model <- randomForest(SalePrice ~ ., data = train)
+
+predictions <- predict(rf_model, newdata = validation)
+validation$SalePrice = predictions
+write.csv(validation,"validation.csv")
+summary(predictions)
+```
+```{r MSE RF}
+summary(predictions)
+mse <- mean((temp$SalePrice - validation$SalePrice)^2)
+mse
+```
+# ----------------------------------------
+```{r loadData}
+test_data <- read.csv("test.csv")
+sum(is.na(test_data))
+missing_cols <- colSums(is.na(test_data)) > 0
+missing_cols
+
+
+for (col in names(test_data)[missing_cols]) {
+  col_mean <- mean(test_data[[col]], na.rm = TRUE)
+  test_data[[col]][is.na(test_data[[col]])] <- col_mean
+}
+sum(is.na(test_data))
+write.csv(test_data,"test.csv")
+```
+
+```{r Model}
+library(caret)
+train_data = read.csv("D:/SEM-6/Statistics/Project/Housing Prices/train.csv", header = TRUE)
+
+lm_model = train(SalePrice ~ ., data=train_data,method="lm")
+```
+
+```{r predict}
+
+predictions <- predict(lm_model, newdata = test_data)
+```
+
+
+```{r final}
+test_data$SalePrice = predictions
+write.csv(test_data,"test.csv")
+```
+
+```{r forestrandom}
+library(randomForest)
+
+train_data <- read.csv("train.csv")
+rf_model <- randomForest(SalePrice ~ ., data = train_data)
+
+test_data <- read.csv("test.csv")
+predictions <- predict(rf_model, newdata = test_data)
+
+test_data$SalePrice <- predictions
+write.csv(test_data, "test.csv", row.names = FALSE)
+```
+

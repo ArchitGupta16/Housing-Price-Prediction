@@ -1,0 +1,8 @@
+"0","my_colors <- c(""#F8766D"", ""#7CAE00"", ""#00BFC4"", ""#C77CFF"", ""#619CFF"", ""#999999"", ""blue"", ""#F0E442"", ""#FF61C3"", ""#00FFFF"", ""#FFA07A"", ""#20B2AA"", ""#FF7F50"", ""#6A5ACD"", ""#00FF7F"", ""#FFD700"", ""#B22222"", ""#FFC0CB"", ""#483D8B"", ""#32CD32"", ""#FF1493"", ""#DAA520"", ""#800000"", ""#7B68EE"",""black"")"
+"0","ggplot(house, aes(x = """", fill = Exterior1st)) +"
+"0","  geom_bar(width = 1, color = ""black"") +"
+"0","  coord_polar(theta = ""y"") +"
+"0","  scale_fill_manual(values = my_colors) +"
+"0","  labs(title = ""Distribution of Exterior1st"","
+"0","       fill = ""Exterior1st"") +"
+"0","  theme_void()"

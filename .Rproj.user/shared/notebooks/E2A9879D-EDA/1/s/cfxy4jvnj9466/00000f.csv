@@ -1,0 +1,4 @@
+"0",""
+"0","reduced = subset(house, select = c(-YrSold,-MoSold,-MiscVal,         -PoolArea,-ScreenPorch,-X3SsnPorch,-GarageCond,-GarageQual,-BsmtFullBath,-LowQualFinSF,-Heating))"
+"0",""
+"0",""

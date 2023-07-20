@@ -1,0 +1,7 @@
+"0","mean_LotFrontage <- mean(house$LotFrontage, na.rm = TRUE)"
+"0","house$LotFrontage[is.na(house$LotFrontage)] <- mean_LotFrontage"
+"0","sum(is.na(house$MSZoning))"
+"1","[1]"
+"1"," 0"
+"1","
+"

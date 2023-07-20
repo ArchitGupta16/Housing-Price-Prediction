@@ -1,0 +1,5 @@
+"0","ggplot(house, aes(x = Street)) +"
+"0","  geom_bar(fill = ""lightblue"") +"
+"0","  labs(x = ""Type of Road Access"", y = ""Count"", "
+"0","       title = ""Distribution of Road Access Types"") +"
+"0","  theme_minimal()"

@@ -1,0 +1,6 @@
+"0","library(ggplot2)"
+"0","ggplot(house, aes(x = TotRmsAbvGrd, y = SalePrice)) +"
+"0","  geom_point(size = 3, alpha = 0.8) +"
+"0","  labs(x = ""TotRmsAbvGrd"", y = ""SalePrice"") +"
+"0","  theme_classic()"
+"0",""

@@ -1,0 +1,2 @@
+"0","write.csv(house,file=""test.csv"", row.names=FALSE, col.names = TRUE)"
+"2","Warning: attempt to set 'col.names' ignored"
